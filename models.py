@@ -21,22 +21,21 @@ class TemporalGNN(torch.nn.Module):
         h = self.linear(h)
         return h
 
-
 class TemporalGraphCN(torch.nn.Module):
-    def __init__(self, node_features, hidden_units, out_periods, batch_size) -> None:
+    def __init__(self, node_features, hidden_units, out_periods) -> None:
         super(TemporalGraphCN, self).__init__()
+        self.linear1 = torch.nn.Linear(node_features, hidden_units)
         self.tgnn = TGCN(
-            in_channels=node_features,
+            in_channels=hidden_units,
             out_channels=hidden_units,
-            periods=out_periods,
-            batch_size=batch_size,
         )
-        self.linear = torch.nn.Linear(hidden_units, out_periods)
+        self.linear2 = torch.nn.Linear(hidden_units, out_periods)
 
-    def forward(self, x, edge_index, edge_weight=None, h=None) -> Tensor:
-        h = self.tgnn(x, edge_index, edge_weight, h)
-        h: Tensor = F.relu(h)
-        h = self.linear(h)
+    def forward(self, x, edge_index,) -> Tensor:
+        h: Tensor = self.linear1(x)
+        h = self.tgnn(h, edge_index)
+        h = F.relu(h)
+        h = self.linear2(h)
         return h
 
 
@@ -50,12 +49,11 @@ class RecurrentGNN(torch.nn.Module):
         W = 2
         H = 12
         D = C * W * H
-
         self.flat = torch.nn.Flatten()
         self.linear_2 = torch.nn.Linear(W * H, hidden_units)
         self.tgnn = DCRNN(in_channels=hidden_units, out_channels=hidden_units, K=K)
         self.linear = torch.nn.Linear(hidden_units, out_periods)
-
+        
     def forward(self, x, edge_index, edge_weight=None) -> Tensor:
         h = self.flat(x)
         h = self.linear_2(h)
