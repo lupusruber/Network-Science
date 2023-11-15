@@ -1,8 +1,9 @@
 .venv
-.vscode/launch.json
+.vscode
 __pycache__/models.cpython-310.pyc
 __pycache__/train_and_test.cpython-310.pyc
 data/pems_adj_mat.npy
 data/pems_node_values.npy
 data/PEMS-BAY.zip
 data/PEMS-BAY.zip:Zone.Identifier
+__pycache__

@@ -3,15 +3,16 @@ import torch
 from torch.utils.data import DataLoader
 from torch import Tensor
 from torch_geometric_temporal import PemsBayDatasetLoader, temporal_signal_split
-
+from torch_geometric_temporal.signal import StaticGraphTemporalSignal
 from models import RecurrentGNN, TemporalGNN, TemporalGraphCN
 
 DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 data_loader = PemsBayDatasetLoader()
-dataset = data_loader.get_dataset()
-train_data_set, test_data_set = temporal_signal_split(
+dataset: StaticGraphTemporalSignal = data_loader.get_dataset()
+train_data_set: StaticGraphTemporalSignal
+test_data_set: StaticGraphTemporalSignal = temporal_signal_split(
     data_iterator=dataset, train_ratio=0.8
 )
 
@@ -21,7 +22,18 @@ for snapshot in train_data_set:
     break
 
 
-def create_train_data_loader(train_data_set, BATCH_SIZE) -> DataLoader:
+def create_train_data_loader(
+    train_data_set: StaticGraphTemporalSignal, BATCH_SIZE: int
+) -> DataLoader:
+    """_summary_
+
+    :param train_data_set: _description_
+    :type train_data_set: _type_
+    :param BATCH_SIZE: _description_
+    :type BATCH_SIZE: _type_
+    :return: _description_
+    :rtype: DataLoader
+    """
     train_input = np.array(train_data_set.features)
     train_target = np.array(train_data_set.targets)
 
@@ -41,7 +53,9 @@ def create_train_data_loader(train_data_set, BATCH_SIZE) -> DataLoader:
     return train_loader
 
 
-def create_test_data_loader(test_data_set, BATCH_SIZE) -> DataLoader:
+def create_test_data_loader(
+    train_data_set: StaticGraphTemporalSignal, BATCH_SIZE: int
+) -> DataLoader:
     test_input = np.array(test_data_set.features)
     test_target = np.array(test_data_set.targets)
 
@@ -57,7 +71,7 @@ def create_test_data_loader(test_data_set, BATCH_SIZE) -> DataLoader:
     return test_loader
 
 
-def train_and_eval_DCRNN(number_of_epochs, BATCH_SIZE):
+def train_and_eval_DCRNN(number_of_epochs: int, BATCH_SIZE: int):
     train_loader = create_train_data_loader(train_data_set, BATCH_SIZE)
     test_loader = create_test_data_loader(test_data_set, BATCH_SIZE)
 
@@ -113,58 +127,60 @@ def train_and_eval_DCRNN(number_of_epochs, BATCH_SIZE):
 
                 time += 1
 
-def train_and_eval_TGNN(number_of_epochs, BATCH_SIZE):
 
-  train_loader = create_train_data_loader(train_data_set, BATCH_SIZE)
-  test_loader = create_test_data_loader(test_data_set, BATCH_SIZE)
+def train_and_eval_TGNN(number_of_epochs: int, BATCH_SIZE: int):
+    train_loader = create_train_data_loader(train_data_set, BATCH_SIZE)
+    test_loader = create_test_data_loader(test_data_set, BATCH_SIZE)
 
-  model = TemporalGraphCN(
-      node_features=2,
-      out_periods=12,
-      hidden_units=32,
-      batch_size=BATCH_SIZE,
+    model = TemporalGraphCN(
+        node_features=2,
+        out_periods=12,
+        hidden_units=32,
+        batch_size=BATCH_SIZE,
     ).to(DEVICE)
-  optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-  loss_fn = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    loss_fn = torch.nn.MSELoss()
 
-  for epoch in range(number_of_epochs):
-    print(f'Epoch number: {epoch+1}')
+    for epoch in range(number_of_epochs):
+        print(f"Epoch number: {epoch+1}")
 
-    model.train()
-    time = 0
-    train_loss_list = []
-    for X, y in train_loader:
+        model.train()
+        time = 0
+        train_loss_list = []
+        for X, y in train_loader:
+            y_speed = y[:, :, 0]
+            y_con = y[:, :, 1]
 
-      y_speed = y[:, :, 0]
-      y_con = y[:, :, 1]
+            train_y_hat = model(X, static_edge_index)
+            train_loss = loss_fn(target=y_speed, input=train_y_hat)
 
-      train_y_hat = model(X, static_edge_index)
-      train_loss = loss_fn(target=y_speed, input=train_y_hat)
+            optimizer.zero_grad()
+            train_loss.backward()
+            optimizer.step()
 
-      optimizer.zero_grad()
-      train_loss.backward()
-      optimizer.step()
+            train_loss_list.append(train_loss.item())
 
-      train_loss_list.append(train_loss.item())
+            if time % 100 == 0:
+                print(
+                    f"MSE Train in step {time}: {sum(train_loss_list) / len(train_loss_list)}"
+                )
+            time += 1
 
-      if time % 100 == 0:
-          print(f'MSE Train in step {time}: {sum(train_loss_list) / len(train_loss_list)}')
-      time += 1
+        model.eval()
+        with torch.inference_mode():
+            time = 0
+            test_total_loss = []
 
-    model.eval()
-    with torch.inference_mode():
-      time = 0
-      test_total_loss = []
+            for X, y in test_loader:
+                y = y[:, :, 0]
 
-      for X, y in test_loader:
+                test_y_hat = model(X, static_edge_index)
+                test_loss = loss_fn(target=y, input=test_y_hat)
+                test_total_loss.append(test_loss.item())
 
-        y = y[:, :, 0]
+                if time % 100 == 0:
+                    print(
+                        f"MSE Test in step {time}: {sum(test_total_loss) / len(test_total_loss)}"
+                    )
 
-        test_y_hat = model(X, static_edge_index)
-        test_loss = loss_fn(target=y, input=test_y_hat)
-        test_total_loss.append(test_loss.item())
-
-        if time % 100 == 0:
-            print(f'MSE Test in step {time}: {sum(test_total_loss) / len(test_total_loss)}')
-
-        time += 1
+                time += 1
