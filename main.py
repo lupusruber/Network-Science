@@ -12,9 +12,5 @@ if __name__ == "__main__":
     
     print("bla bla")
     print("bla bla1")
-<<<<<<< HEAD
     print("fdsdfg")
     print("bla bla 2")
-=======
-
->>>>>>> master
