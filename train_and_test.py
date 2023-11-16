@@ -1,3 +1,4 @@
+from typing import Any, Dict
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -5,6 +6,8 @@ from torch import Tensor
 from torch_geometric_temporal import PemsBayDatasetLoader, temporal_signal_split
 from torch_geometric_temporal.signal import StaticGraphTemporalSignal
 from models import RecurrentGNN, TemporalGNN, TemporalGraphCN
+
+from copy import deepcopy
 
 DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -70,7 +73,7 @@ def create_test_data_loader(
     return test_loader
 
 
-def train_and_eval_DCRNN(number_of_epochs: int, BATCH_SIZE: int):
+def train_and_eval_DCRNN(number_of_epochs: int, BATCH_SIZE: int) -> Dict[str, Any]:
     """_summary_
     :param number_of_epochs: The number of epoch for the model training
     :type number_of_epochs: int
@@ -88,6 +91,9 @@ def train_and_eval_DCRNN(number_of_epochs: int, BATCH_SIZE: int):
     ).to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     loss_fn = torch.nn.MSELoss()
+
+    best_error = float("inf")
+    model_dict: Dict[str, Any] = deepcopy(model.state_dict())
 
     for epoch in range(number_of_epochs):
         print(f"Epoch number: {epoch+1}")
@@ -107,10 +113,10 @@ def train_and_eval_DCRNN(number_of_epochs: int, BATCH_SIZE: int):
             optimizer.step()
             train_loss_list.append(train_cost.item())
 
+            train_mse: float = sum(train_loss_list) / len(train_loss_list)
+
             if time % 1000 == 0:
-                print(
-                    f"Train MSE in step {time}: {sum(train_loss_list) / len(train_loss_list)}"
-                )
+                print(f"Train MSE in step {time}: {train_mse}")
 
             time += 1
 
@@ -131,9 +137,17 @@ def train_and_eval_DCRNN(number_of_epochs: int, BATCH_SIZE: int):
                     )
 
                 time += 1
-    torch.save(model.state_dict(),r'saved_models/model_DCRNN.pth')
 
-def train_and_eval_TGCN(number_of_epochs: int, BATCH_SIZE: int) -> None: 
+            test_mse: float = sum(test_loss_list) / len(test_loss_list)
+
+            if test_mse < best_error:
+                best_error = test_mse
+                model_dict = deepcopy(model.state_dict())
+
+    return model_dict
+
+
+def train_and_eval_TGCN(number_of_epochs: int, BATCH_SIZE: int) -> Dict[str, Any]:
     train_loader = create_train_data_loader(train_data_set, BATCH_SIZE)
     test_loader = create_test_data_loader(test_data_set, BATCH_SIZE)
 
@@ -144,6 +158,9 @@ def train_and_eval_TGCN(number_of_epochs: int, BATCH_SIZE: int) -> None:
     ).to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     loss_fn = torch.nn.MSELoss()
+
+    best_error = float("inf")
+    model_dict: Dict[str, Any] = deepcopy(model.state_dict())
 
     for epoch in range(number_of_epochs):
         print(f"Epoch number: {epoch+1}")
@@ -168,6 +185,7 @@ def train_and_eval_TGCN(number_of_epochs: int, BATCH_SIZE: int) -> None:
                 print(
                     f"MSE Train in step {time}: {sum(train_loss_list) / len(train_loss_list)}"
                 )
+
             time += 1
 
         model.eval()
@@ -189,7 +207,15 @@ def train_and_eval_TGCN(number_of_epochs: int, BATCH_SIZE: int) -> None:
 
                 time += 1
 
-def train_and_eval_TGNN(number_of_epochs: int, BATCH_SIZE: int):
+            test_mse: float = sum(test_total_loss) / len(test_total_loss)
+            if test_mse < best_error:
+                best_error = test_mse
+                model_dict = deepcopy(model.state_dict())
+
+    return model_dict
+
+
+def train_and_eval_TGNN(number_of_epochs: int, BATCH_SIZE: int) -> Dict[str, Any]:
     train_loader = create_train_data_loader(train_data_set, BATCH_SIZE)
     test_loader = create_test_data_loader(test_data_set, BATCH_SIZE)
 
@@ -201,6 +227,9 @@ def train_and_eval_TGNN(number_of_epochs: int, BATCH_SIZE: int):
     ).to(DEVICE)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     loss_fn = torch.nn.MSELoss()
+
+    best_error = float("inf")
+    model_dict: Dict[str, Any] = deepcopy(model.state_dict())
 
     for epoch in range(number_of_epochs):
         print(f"Epoch number: {epoch+1}")
@@ -245,4 +274,11 @@ def train_and_eval_TGNN(number_of_epochs: int, BATCH_SIZE: int):
                     )
 
                 time += 1
-    torch.save(model.state_dict(), r'saved_models/model_TGNN.pth')
+
+            test_mse: float = sum(test_total_loss) / len(test_total_loss)
+
+            if test_mse < best_error:
+                best_error = test_mse
+                model_dict = deepcopy(model.state_dict())
+
+    return model_dict
