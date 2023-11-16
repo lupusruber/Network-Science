@@ -1,4 +1,3 @@
-from doctest import master
 import torch
 import torch.utils.data
 
