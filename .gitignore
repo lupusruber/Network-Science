@@ -1,4 +1,5 @@
 .venv
+.idea
 .vscode
 __pycache__/models.cpython-310.pyc
 __pycache__/train_and_test.cpython-310.pyc
