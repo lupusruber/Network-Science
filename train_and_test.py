@@ -71,6 +71,12 @@ def create_test_data_loader(
 
 
 def train_and_eval_DCRNN(number_of_epochs: int, BATCH_SIZE: int):
+    """_summary_
+    :param number_of_epochs: The number of epoch for the model training
+    :type number_of_epochs: int
+    :param BATCH_SIZE: How big is the batch size
+    :type BATCH_SIZE: int
+    """
     train_loader = create_train_data_loader(train_data_set, BATCH_SIZE)
     test_loader = create_test_data_loader(test_data_set, BATCH_SIZE)
 
