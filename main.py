@@ -11,4 +11,9 @@ if __name__ == "__main__":
     
     print("bla bla")
     print("bla bla1")
+<<<<<<< HEAD
     print("fdsdfg")
+    print("bla bla 2")
+=======
+
+>>>>>>> 77661f2fab7820e079b9e983176d80e442f5a5da
