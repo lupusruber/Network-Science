@@ -131,6 +131,7 @@ def train_and_eval_DCRNN(number_of_epochs: int, BATCH_SIZE: int):
                     )
 
                 time += 1
+    torch.save(model.state_dict(),r'saved_models/model_DCRNN.pth')
 
 def train_and_eval_TGCN(number_of_epochs: int, BATCH_SIZE: int) -> None: 
     train_loader = create_train_data_loader(train_data_set, BATCH_SIZE)
@@ -244,3 +245,4 @@ def train_and_eval_TGNN(number_of_epochs: int, BATCH_SIZE: int):
                     )
 
                 time += 1
+    torch.save(model.state_dict(), r'saved_models/model_TGNN.pth')
