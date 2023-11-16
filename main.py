@@ -1,3 +1,4 @@
+from doctest import master
 import torch
 import torch.utils.data
 
@@ -16,4 +17,4 @@ if __name__ == "__main__":
     print("bla bla 2")
 =======
 
->>>>>>> 77661f2fab7820e079b9e983176d80e442f5a5da
+>>>>>>> master
