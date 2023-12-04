@@ -194,7 +194,8 @@ def train_and_eval_TGCN(number_of_epochs: int, BATCH_SIZE: int) -> Dict[str, Any
             test_total_loss = []
 
             for X, y in test_loader:
-                y = y[:, :, 0]
+                y = y[:, :, 0].squeeze()
+                X = X[:, :, 0].squeeze()
 
                 test_y_hat = model(X, static_edge_index)
                 test_loss = loss_fn(target=y, input=test_y_hat)
@@ -262,10 +263,10 @@ def train_and_eval_TGNN(number_of_epochs: int, BATCH_SIZE: int) -> Dict[str, Any
             test_total_loss = []
 
             for X, y in test_loader:
-                y = y[:, :, 0]
+                y_speed = y[:, :, 0]
 
                 test_y_hat = model(X, static_edge_index)
-                test_loss = loss_fn(target=y, input=test_y_hat)
+                test_loss = loss_fn(target=y_speed, input=test_y_hat)
                 test_total_loss.append(test_loss.item())
 
                 if time % 100 == 0:

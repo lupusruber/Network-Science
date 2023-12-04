@@ -47,7 +47,7 @@ if __name__ == "__main__":
     model_TGNN, model_DCRNN, model_TGCN = get_models()
 
     if path_TGNN.is_file():
-        loaded_state_dict = torch.load(path_TGNN)
+        loaded_state_dict = torch.load(path_TGNN, map_location=DEVICE)
         model_TGNN.load_state_dict(loaded_state_dict)
         print("TGNN device found !")
     else:
@@ -55,17 +55,17 @@ if __name__ == "__main__":
         torch.save(state_dict, path_TGNN)
 
     if path_DCRNN.is_file():
-        loaded_state_dict = torch.load(path_DCRNN)
+        loaded_state_dict = torch.load(path_DCRNN, map_location=DEVICE)
         model_DCRNN.load_state_dict(loaded_state_dict)
-        print("TGNN device found !")
+        print("DCRNN device found !")
     else:
         state_dict = train_and_eval_DCRNN(number_of_epochs=2, BATCH_SIZE=1)
         torch.save(state_dict, path_DCRNN)
 
     if path_TGCN.is_file():
-        loaded_state_dict = torch.load(path_TGCN)
+        loaded_state_dict = torch.load(path_TGCN, map_location=DEVICE)
         model_TGCN.load_state_dict(loaded_state_dict)
-        print("TGNN device found !")
+        print("TGCN device found !")
     else:
         state_dict = train_and_eval_TGCN(number_of_epochs=2, BATCH_SIZE=1)
         torch.save(state_dict, path_TGCN)
