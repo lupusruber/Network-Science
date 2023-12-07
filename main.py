@@ -80,28 +80,36 @@ def get_trained_models():
     return model_TGNN, model_DCRNN, model_TGCN
 
 
-if __name__ == "__main__":
-    model_TGNN, model_DCRNN, model_TGCN = get_trained_models()
-
+def visualise(*visualisations):
     X_test, y_test = get_sample_data_for_viz()
-
     timestep = 5
     X_test_tgcn = X_test[timestep, :, 0]
     y_test = y_test[timestep, :, 0]
 
-    y_hat_tgcn = model_TGCN(X_test_tgcn, static_edge_index).to(DEVICE)
-    viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_tgcn, true=y_test, title='TGCN')
+    if "TGCN" in visualisations:
+        y_hat_tgcn = model_TGCN(X_test_tgcn, static_edge_index).to(DEVICE)
+        viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_tgcn, true=y_test, title='TGCN')
 
-    X_test_dcrn = X_test[timestep, :].reshape(325, 24)
-    y_hat_dcrn = model_DCRNN(X_test_dcrn, static_edge_index).to(DEVICE)
-    viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_dcrn, true=y_test, title='DCRNN')
+    if "DCRNN" in visualisations:
+        X_test_dcrn = X_test[timestep, :].reshape(325, 24)
+        y_hat_dcrn = model_DCRNN(X_test_dcrn, static_edge_index).to(DEVICE)
+        viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_dcrn, true=y_test, title='DCRNN')
 
-    X_data = create_test_data_loader(test_data_set=train_and_test.test_data_set, BATCH_SIZE=32)
-    X_from_loader, y_from_loader = None, None
-    for index, (X, y) in enumerate(X_data):
-        if index == timestep // 32:
-            X_from_loader, y_from_loader = X, y[timestep % 32]
-            break
+    if "TGNN" in visualisations:
+        X_data = create_test_data_loader(test_data_set=train_and_test.test_data_set, BATCH_SIZE=32)
+        X_from_loader, y_from_loader = None, None
+        for index, (X, y) in enumerate(X_data):
 
-    y_hat_tgnn = model_TGNN(X_from_loader, static_edge_index).to(DEVICE)
-    viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_tgnn[timestep % 32], true=y_test, title='TGNN')
+            if index == timestep // 32:
+                X_from_loader, y_from_loader = X, y[timestep % 32]
+
+                break
+
+        y_hat_tgnn = model_TGNN(X_from_loader, static_edge_index).to(DEVICE)
+        viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_tgnn[timestep % 32], true=y_test,
+                                            title='TGNN')
+
+
+if __name__ == "__main__":
+    model_TGNN, model_DCRNN, model_TGCN = get_trained_models()
+    visualise("DCRNN", "TGNN", "TGCN")
