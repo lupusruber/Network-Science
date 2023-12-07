@@ -1,5 +1,7 @@
 from pathlib import Path
-from train_and_test import static_edge_index
+
+import train_and_test
+from train_and_test import static_edge_index, create_test_data_loader
 import torch
 import torch.utils.data
 
@@ -72,10 +74,23 @@ if __name__ == "__main__":
         torch.save(state_dict, path_TGCN)
 
     X_test, y_test = get_sample_data_for_viz()
-    timestep = 0
-    print(X_test.shape)
-    X_test = X_test[timestep, :, 0]
+    timestep = 5
+    X_test_tgcn = X_test[timestep, :, 0]
     y_test = y_test[timestep, :, 0]
-    print(X_test.shape)
-    y_hat = model_TGCN(X_test, static_edge_index).to(DEVICE)
-    viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat, true=y_test)
+
+    y_hat_tgcn = model_TGCN(X_test_tgcn, static_edge_index).to(DEVICE)
+    viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_tgcn, true=y_test, title='TGCN')
+
+    X_test_dcrn = X_test[timestep, :].reshape(325, 24)
+    y_hat_dcrn = model_DCRNN(X_test_dcrn, static_edge_index).to(DEVICE)
+    viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_dcrn, true=y_test, title='DCRNN')
+
+    X_data = create_test_data_loader(test_data_set=train_and_test.test_data_set, BATCH_SIZE=32)
+    X_from_loader, y_from_loader = None, None
+    for index, (X, y) in enumerate(X_data):
+        if index == timestep // 32:
+            X_from_loader, y_from_loader = X, y[timestep % 32]
+            break
+
+    y_hat_tgnn = model_TGNN(X_from_loader, static_edge_index).to(DEVICE)
+    viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat_tgnn[timestep % 32], true=y_test, title='TGNN')

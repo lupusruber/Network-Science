@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from torch import Tensor
 
 from train_and_test import dataset
 
@@ -9,11 +10,12 @@ def visualize_data(sensor_number=1, time_steps=24):
     plt.show()
 
 
-def prediction_of_first_n_detectors(n, predicted, true, next):
+def prediction_of_first_n_detectors(n: int, predicted: Tensor, true: Tensor, next: int, title: str):
     true_output = true.cpu()
     predicted_output = predicted.cpu()
 
     plt.figure(figsize=(30, 4), dpi=80)
+    plt.title(title)
 
     count = 0
     flag = True
