@@ -1,10 +1,11 @@
 from pathlib import Path
-
+from train_and_test import static_edge_index
 import torch
 import torch.utils.data
 
+import viz
 from models import TemporalGNN, RecurrentGNN, TemporalGraphCN
-from train_and_test import train_and_eval_DCRNN, train_and_eval_TGCN, train_and_eval_TGNN
+from train_and_test import train_and_eval_DCRNN, train_and_eval_TGCN, train_and_eval_TGNN, get_sample_data_for_viz
 
 DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -69,3 +70,12 @@ if __name__ == "__main__":
     else:
         state_dict = train_and_eval_TGCN(number_of_epochs=2, BATCH_SIZE=1)
         torch.save(state_dict, path_TGCN)
+
+    X_test, y_test = get_sample_data_for_viz()
+    timestep = 0
+    print(X_test.shape)
+    X_test = X_test[timestep, :, 0]
+    y_test = y_test[timestep, :, 0]
+    print(X_test.shape)
+    y_hat = model_TGCN(X_test, static_edge_index).to(DEVICE)
+    viz.prediction_of_first_n_detectors(n=20, next=0, predicted=y_hat, true=y_test)

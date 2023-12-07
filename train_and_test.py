@@ -24,6 +24,18 @@ for snapshot in train_data_set:
     break
 
 
+def get_sample_data_for_viz():
+    test_input = np.array(test_data_set.features)
+    test_target = np.array(test_data_set.targets)
+
+    test_x_tensor = torch.from_numpy(test_input).to(DEVICE, dtype=torch.float32)
+    test_target_tensor = torch.from_numpy(test_target).to(DEVICE, dtype=torch.float32)
+
+    return test_x_tensor, test_target_tensor
+
+
+
+
 def create_train_data_loader(
     train_data_set: StaticGraphTemporalSignal, BATCH_SIZE: int
 ) -> DataLoader:
