@@ -110,11 +110,12 @@ def visualise(*visualisations):
                 break
 
         y_hat_tgnn = model_TGNN(X_from_loader, static_edge_index).to(DEVICE)
+
         viz.prediction_of_first_n_detectors(
             n=20,
             next=0,
             predicted=y_hat_tgnn[timestep % 32],
-            true=y_from_loader,
+            true=y_from_loader[:, 0],
             title="TGNN",
         )
 
