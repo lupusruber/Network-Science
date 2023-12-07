@@ -34,8 +34,6 @@ def get_sample_data_for_viz():
     return test_x_tensor, test_target_tensor
 
 
-
-
 def create_train_data_loader(
     train_data_set: StaticGraphTemporalSignal, BATCH_SIZE: int
 ) -> DataLoader:

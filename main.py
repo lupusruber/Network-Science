@@ -7,12 +7,17 @@ import torch.utils.data
 
 import viz
 from models import TemporalGNN, RecurrentGNN, TemporalGraphCN
-from train_and_test import train_and_eval_DCRNN, train_and_eval_TGCN, train_and_eval_TGNN, get_sample_data_for_viz
+from train_and_test import (
+    train_and_eval_DCRNN,
+    train_and_eval_TGCN,
+    train_and_eval_TGNN,
+    get_sample_data_for_viz,
+)
 
 DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-def get_models():
+def get_models() -> tuple[TemporalGNN, RecurrentGNN, TemporalGraphCN]:
     model_TGNN = TemporalGNN(
         node_features=2,
         out_periods=12,
@@ -37,14 +42,13 @@ def get_models():
 
 
 def get_paths():
-    path_TGNN = Path(r'saved_models/model_TGNN_state_dict.pth')
-    path_DCRNN = Path(r'saved_models/model_DCRNN_state_dict.pth')
-    path_TGCN = Path(r'saved_models/model_TGCN_state_dict.pth')
+    path_TGNN = Path(r"saved_models/model_TGNN_state_dict.pth")
+    path_DCRNN = Path(r"saved_models/model_DCRNN_state_dict.pth")
+    path_TGCN = Path(r"saved_models/model_TGCN_state_dict.pth")
     return path_TGNN, path_DCRNN, path_TGCN
 
 
-if __name__ == "__main__":
-
+def get_trained_models():
     path_TGNN, path_DCRNN, path_TGCN = get_paths()
 
     model_TGNN, model_DCRNN, model_TGCN = get_models()
@@ -52,7 +56,7 @@ if __name__ == "__main__":
     if path_TGNN.is_file():
         loaded_state_dict = torch.load(path_TGNN, map_location=DEVICE)
         model_TGNN.load_state_dict(loaded_state_dict)
-        print("TGNN device found !")
+        print("TGNN dict found !")
     else:
         state_dict = train_and_eval_TGNN(number_of_epochs=2, BATCH_SIZE=32)
         torch.save(state_dict, path_TGNN)
@@ -60,7 +64,7 @@ if __name__ == "__main__":
     if path_DCRNN.is_file():
         loaded_state_dict = torch.load(path_DCRNN, map_location=DEVICE)
         model_DCRNN.load_state_dict(loaded_state_dict)
-        print("DCRNN device found !")
+        print("DCRNN dict found !")
     else:
         state_dict = train_and_eval_DCRNN(number_of_epochs=2, BATCH_SIZE=1)
         torch.save(state_dict, path_DCRNN)
@@ -68,12 +72,19 @@ if __name__ == "__main__":
     if path_TGCN.is_file():
         loaded_state_dict = torch.load(path_TGCN, map_location=DEVICE)
         model_TGCN.load_state_dict(loaded_state_dict)
-        print("TGCN device found !")
+        print("TGCN dict found !")
     else:
         state_dict = train_and_eval_TGCN(number_of_epochs=2, BATCH_SIZE=1)
         torch.save(state_dict, path_TGCN)
 
+    return model_TGNN, model_DCRNN, model_TGCN
+
+
+if __name__ == "__main__":
+    model_TGNN, model_DCRNN, model_TGCN = get_trained_models()
+
     X_test, y_test = get_sample_data_for_viz()
+
     timestep = 5
     X_test_tgcn = X_test[timestep, :, 0]
     y_test = y_test[timestep, :, 0]

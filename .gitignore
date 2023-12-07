@@ -8,3 +8,4 @@ data/pems_node_values.npy
 data/PEMS-BAY.zip
 data/PEMS-BAY.zip:Zone.Identifier
 __pycache__
+data
