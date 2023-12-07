@@ -12,7 +12,9 @@ def visualize_data(sensor_number=1, time_steps=24):
     plt.show()
 
 
-def prediction_of_first_n_detectors(n: int, predicted: Tensor, true: Tensor, next: int, title: str):
+def prediction_of_first_n_detectors(
+    n: int, predicted: Tensor, true: Tensor, next: int, title: str
+):
     true_output = true.cpu()
     predicted_output = predicted.cpu()
 
