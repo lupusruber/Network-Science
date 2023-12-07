@@ -250,7 +250,7 @@ def train_and_eval_TGNN(number_of_epochs: int, BATCH_SIZE: int) -> Dict[str, Any
         train_loss_list = []
         for X, y in train_loader:
             y_speed = y[:, :, 0]
-            y_con = y[:, :, 1]
+            #y_con = y[:, :, 1]
 
             train_y_hat = model(X, static_edge_index)
             train_loss = loss_fn(target=y_speed, input=train_y_hat)
