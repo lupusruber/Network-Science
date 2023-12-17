@@ -60,7 +60,7 @@ def create_train_data_loader(
         train_x_tensor, train_target_tensor
     )
     train_loader: DataLoader = torch.utils.data.DataLoader(
-        train_data_set_new, batch_size=BATCH_SIZE, shuffle=True, drop_last=True
+        train_data_set_new, batch_size=BATCH_SIZE, shuffle=False, drop_last=True
     )
     return train_loader
 
@@ -78,7 +78,7 @@ def create_test_data_loader(
         test_x_tensor, test_target_tensor
     )
     test_loader = torch.utils.data.DataLoader(
-        test_data_set_new, batch_size=BATCH_SIZE, shuffle=True, drop_last=True
+        test_data_set_new, batch_size=BATCH_SIZE, shuffle=False, drop_last=True
     )
     return test_loader
 

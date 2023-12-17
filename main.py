@@ -43,7 +43,7 @@ def get_models() -> tuple[TemporalGNN, RecurrentGNN, TemporalGraphCN]:
 
 def get_paths():
     path_TGNN = Path(r"saved_models/model_TGNN_state_dict.pth")
-    path_DCRNN = Path(r"saved_models/model_DCRNN_state_dict.pth")
+    path_DCRNN = Path(r"tmp/model_DCRNN_state_dict.pth")
     path_TGCN = Path(r"saved_models/model_TGCN_state_dict.pth")
     return path_TGNN, path_DCRNN, path_TGCN
 
@@ -122,4 +122,8 @@ def visualise(*visualisations):
 
 if __name__ == "__main__":
     model_TGNN, model_DCRNN, model_TGCN = get_trained_models()
-    visualise("DCRNN", "TGNN", "TGCN")
+    # visualise("DCRNN", "TGNN", "TGCN")
+    visualise("DCRNN")
+    # state_dict = train_and_eval_DCRNN(number_of_epochs=10, BATCH_SIZE=1)
+    # path_DCRNN = Path(r"saved_models/model_DCRNN_state_dict.pth")
+    # torch.save(state_dict, path_DCRNN)
