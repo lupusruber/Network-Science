@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import numpy as np
+from torch.utils.data import DataLoader
+
 import train_and_test
 from train_and_test import static_edge_index, create_test_data_loader
 import torch
@@ -80,6 +83,38 @@ def get_trained_models():
     return model_TGNN, model_DCRNN, model_TGCN
 
 
+def get_all_y_hats(test_loader: DataLoader, model_name: str):
+    pred_val = list()
+    true_val = list()
+    if "DCRNN" == model_name:
+        for X, y in test_loader:
+            X = X.squeeze()
+            X = X.reshape(325, 24)
+            y = y.squeeze()
+            with torch.inference_mode():
+                model_TGCN.eval()
+                Y_hat = model_DCRNN(X, static_edge_index).to(DEVICE)
+            pred_val.append(Y_hat.cpu())
+            true_val.append(y[:, 0].cpu())
+    if "TGCN" == model_name:
+        pass
+    if "TGNNN" == model_name:
+        pass
+
+    return torch.tensor(np.array(pred_val)), torch.tensor(np.array(true_val))
+
+
+def visualise_sensors(*visualisations):
+    if "TGCN" in visualisations: pass
+
+    if "DCRNN" in visualisations:
+        pred, true = get_all_y_hats(create_test_data_loader(test_data_set=train_and_test.test_data_set, BATCH_SIZE=1),
+                                    "DCRNN")
+        viz.visualize_sensors_for_every_time_stamp(n=1000, predicted=pred, true=true, title="DCRNN")
+
+    if "TGNN" in visualisations: pass
+
+
 def visualise(*visualisations):
     X_test, y_test = get_sample_data_for_viz()
     timestep = 5
@@ -121,8 +156,6 @@ def visualise(*visualisations):
 
 
 if __name__ == "__main__":
-    state_dict = train_and_eval_DCRNN(number_of_epochs=10, BATCH_SIZE=1)
-    path_DCRNN = Path(r"saved_models/model_DCRNN_state_dict.pth")
-    torch.save(state_dict, path_DCRNN)
     model_TGNN, model_DCRNN, model_TGCN = get_trained_models()
-    visualise("DCRNN")
+    # visualise("DCRNN", "TGNN", "TGCN")
+    visualise_sensors("DCRNN")
