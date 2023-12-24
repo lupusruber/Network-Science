@@ -1,7 +1,7 @@
 import torch
+import torch.nn.functional as F
 from torch import Tensor
 from torch_geometric_temporal import A3TGCN2, DCRNN, TGCN
-import torch.nn.functional as F
 
 
 class TemporalGNN(torch.nn.Module):
@@ -62,8 +62,8 @@ class RecurrentGNN(torch.nn.Module):
     def forward(self, x, edge_index, edge_weight=None) -> Tensor:
         h = self.flat(x)
         h = self.linear_2(h)
-        h = F.tanh(h)
+        h = F.sigmoid(h)
         h = self.tgnn(h, edge_index, edge_weight)
-        h: Tensor = F.relu(h)
+        h: Tensor = F.sigmoid(h)
         h = self.linear(h)
         return h
