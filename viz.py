@@ -176,3 +176,7 @@ def visualise(*visualisations):
             true=y_from_loader[:, 0],
             title="TGNN",
         )
+        
+        
+if __name__ == '__main__':
+    ...

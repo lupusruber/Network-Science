@@ -2,7 +2,6 @@ import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
 from torch import Tensor
-import torch
 from pyvis.network import Network
 
 adj_mat = np.load(r"data/pems_adj_mat.npy")
@@ -64,11 +63,15 @@ def create_weighted_graph(y_true: Tensor, graph: nx.Graph, source: int, target: 
 
 if __name__ == "__main__":
     ones = np.ones(325)
-    print(torch.__version__)
-    create_weighted_graph(y_true=Tensor(ones), graph=graph, source=10, target=7)
+    
+    net = Network(notebook=False)
 
-    nt = Network()
-    nt.from_nx(graph)
-    nt.show("nx.html")
+    shortest_path = nx.dijkstra_path(graph, source=10, target=7, weight="weight")
+    
+    for node in graph.nodes:
+        net.add_node(node, color='red' if node in shortest_path else 'blue')
 
-    graph_info_and_visualizations(graph=graph)
+    for edge in graph.edges:
+        net.add_edge(*edge, color='red' if set(edge).issubset(shortest_path) else 'blue')
+        
+    net.show('network.html', notebook=False)
