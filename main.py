@@ -46,7 +46,7 @@ def get_models() -> tuple[TemporalGNN, RecurrentGNN, TemporalGraphCN]:
 
 def get_paths():
     path_TGNN = Path(r"saved_models/model_TGNN_state_dict.pth")
-    path_DCRNN = Path(r"tmp/model_DCRNN_state_dict.pth")
+    path_DCRNN = Path(r"saved_models/model_DCRNN_state_dict.pth")
     path_TGCN = Path(r"saved_models/model_TGCN_state_dict.pth")
     return path_TGNN, path_DCRNN, path_TGCN
 

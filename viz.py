@@ -27,6 +27,8 @@ def visualize_sensors_for_every_time_stamp(n: int, predicted: Tensor, true: Tens
     sns.lineplot(x=list(range(n)), y=averages_pred,  label="Predicted for sensors by time stamp")
     sns.lineplot(x=list(range(n)), y=averages_true,  label="True for sensors by time stamp")
 
+    plt.xlabel('Predicted Values')
+    plt.ylabel('True Values')
     plt.title('True vs. Predicted Values')
 
     plt.legend()
