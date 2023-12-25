@@ -14,7 +14,6 @@ from data import (
 )
 from models import model_DCRNN, model_TGCN, model_TGNN
 
-
 DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 
@@ -27,14 +26,27 @@ def get_all_y_hats(test_loader: DataLoader, model_name: str) -> tuple[Tensor, Te
             X = X.reshape(325, 24)
             y = y.squeeze()
             with torch.inference_mode():
-                model_TGCN.eval()
-                Y_hat = model_DCRNN(X, static_edge_index).to(DEVICE)
-            pred_val.append(Y_hat.cpu())
+                model_DCRNN.eval()
+                y_hat = model_DCRNN(X, static_edge_index).to(DEVICE)
+            pred_val.append(y_hat.cpu())
             true_val.append(y[:, 0].cpu())
     if "TGCN" == model_name:
-        pass
-    if "TGNNN" == model_name:
-        pass
+        for X, y in test_loader:
+            X = X[:, :, 0].squeeze()
+            y = y[:, :, 0].squeeze()
+            with torch.inference_mode():
+                model_TGCN.eval()
+                y_hat = model_TGCN(X, static_edge_index).to(DEVICE)
+            pred_val.append(y_hat.cpu())
+            true_val.append(y.cpu())
+    if "TGNN" == model_name:
+        for X, y in test_loader:
+            with torch.inference_mode():
+                model_TGNN.eval()
+                y_hat = model_TGNN(X, static_edge_index).to(DEVICE)
+            for timestamp in y:
+                true_val.append(timestamp[:, 0].cpu())
+            pred_val.append(y_hat.squeeze().cpu())
 
     return torch.tensor(np.array(pred_val)), torch.tensor(np.array(true_val))
 
@@ -48,7 +60,7 @@ def visualize_data(sensor_number=1, time_steps=24):
 
 
 def visualize_sensors_for_every_time_stamp(
-    n: int, predicted: Tensor, true: Tensor, title: str
+        n: int, predicted: Tensor, true: Tensor, title: str
 ):
     true_output = true.cpu()
     predicted_output = predicted.cpu()
@@ -70,9 +82,9 @@ def visualize_sensors_for_every_time_stamp(
         x=list(range(n)), y=averages_true, label="True for sensors by time stamp"
     )
 
-    plt.xlabel("Predicted Values")
-    plt.ylabel("True Values")
-    plt.title("True vs. Predicted Values")
+    plt.xlabel("Time stamps")
+    plt.ylabel("Velocities")
+    plt.title(f"True vs. Predicted Values {title}")
 
     plt.legend()
     plt.show()
@@ -81,7 +93,7 @@ def visualize_sensors_for_every_time_stamp(
 
 
 def prediction_of_first_n_detectors(
-    n: int, predicted: Tensor, true: Tensor, next: int, title: str
+        n: int, predicted: Tensor, true: Tensor, next: int, title: str
 ):
     true_output = true.cpu()
     predicted_output = predicted.cpu()
@@ -123,7 +135,15 @@ def prediction_of_first_n_detectors(
 
 def visualise_sensors(*visualisations):
     if "TGCN" in visualisations:
-        pass
+        pred, true = get_all_y_hats(
+            test_loader=create_test_data_loader(
+                test_data_set=test_data_set, BATCH_SIZE=1
+            ),
+            model_name="TGCN",
+        )
+        visualize_sensors_for_every_time_stamp(
+            n=1000, predicted=pred, true=true, title="TGCN"
+        )
 
     if "DCRNN" in visualisations:
         pred, true = get_all_y_hats(
@@ -137,7 +157,15 @@ def visualise_sensors(*visualisations):
         )
 
     if "TGNN" in visualisations:
-        pass
+        pred, true = get_all_y_hats(
+            test_loader=create_test_data_loader(
+                test_data_set=test_data_set, BATCH_SIZE=1
+            ),
+            model_name="TGNN",
+        )
+        visualize_sensors_for_every_time_stamp(
+            n=1000, predicted=pred, true=true, title="TGNN"
+        )
 
 
 def visualise(*visualisations):
