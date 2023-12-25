@@ -46,7 +46,8 @@ def get_all_y_hats(test_loader: DataLoader, model_name: str) -> tuple[Tensor, Te
                 y_hat = model_TGNN(X, static_edge_index).to(DEVICE)
             for timestamp in y:
                 true_val.append(timestamp[:, 0].cpu())
-            pred_val.append(y_hat.squeeze().cpu())
+            for timestamp in y_hat:
+                pred_val.append(timestamp.cpu())
 
     return torch.tensor(np.array(pred_val)), torch.tensor(np.array(true_val))
 
@@ -159,7 +160,7 @@ def visualise_sensors(*visualisations):
     if "TGNN" in visualisations:
         pred, true = get_all_y_hats(
             test_loader=create_test_data_loader(
-                test_data_set=test_data_set, BATCH_SIZE=1
+                test_data_set=test_data_set, BATCH_SIZE=32
             ),
             model_name="TGNN",
         )
