@@ -1,16 +1,16 @@
+import numpy as np
+import seaborn as sns
 import torch
 from matplotlib import pyplot as plt
 from torch import Tensor
-import seaborn as sns
-import numpy as np
 from torch.utils.data import DataLoader
 
 from data import (
     create_test_data_loader,
     dataset,
-    test_data_set,
-    static_edge_index,
     get_sample_data_for_viz,
+    static_edge_index,
+    test_data_set,
 )
 from models import model_DCRNN, model_TGCN, model_TGNN
 
@@ -18,6 +18,14 @@ DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 def get_all_y_hats(test_loader: DataLoader, model_name: str) -> tuple[Tensor, Tensor]:
+    """_summary_
+    :param test_loader: Which test data loader to use
+    :type test_loader: DataLoader
+    :param model_name: Name of the model
+    :type model_name: str
+    :return: predicted and true tensor values for each time step
+    :rtype: tuple[Tensor, Tensor]
+    """
     pred_val = list()
     true_val = list()
     if "DCRNN" == model_name:
@@ -61,7 +69,7 @@ def visualize_data(sensor_number=1, time_steps=24):
 
 
 def visualize_sensors_for_every_time_stamp(
-        n: int, predicted: Tensor, true: Tensor, title: str
+    n: int, predicted: Tensor, true: Tensor, title: str
 ):
     true_output = true.cpu()
     predicted_output = predicted.cpu()
@@ -94,7 +102,7 @@ def visualize_sensors_for_every_time_stamp(
 
 
 def prediction_of_first_n_detectors(
-        n: int, predicted: Tensor, true: Tensor, next: int, title: str
+    n: int, predicted: Tensor, true: Tensor, next: int, title: str
 ):
     true_output = true.cpu()
     predicted_output = predicted.cpu()
@@ -169,11 +177,14 @@ def visualise_sensors(*visualisations):
         )
 
 
-def get_all_y_for_DCRNN():
+def get_all_y_for_DCRNN() -> tuple[Tensor, Tensor]:
+    """_summary_
+
+    :return: tuple of predicted and true values
+    :rtype: tuple[Tensor, Tensor]
+    """
     return get_all_y_hats(
-        test_loader=create_test_data_loader(
-            test_data_set=test_data_set, BATCH_SIZE=1
-        ),
+        test_loader=create_test_data_loader(test_data_set=test_data_set, BATCH_SIZE=1),
         model_name="DCRNN",
     )
 
@@ -214,7 +225,7 @@ def visualise(*visualisations):
             true=y_from_loader[:, 0],
             title="TGNN",
         )
-        
-        
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     ...

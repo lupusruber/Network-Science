@@ -3,6 +3,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from torch import Tensor
 from pyvis.network import Network
+from sklearn.preprocessing import MinMaxScaler
+
+from viz import get_all_y_for_DCRNN
 
 
 adj_mat = np.load(r"data/pems_adj_mat.npy")
@@ -24,7 +27,7 @@ def graph_info_and_visualizations(graph: nx.Graph) -> None:
 
 
 def create_weighted_graph(y_true: Tensor, graph: nx.Graph, source: int, target: int):
-    predictions = y_true.cpu().numpy()
+    predictions = y_true
     node_labels = {
         node: prediction for node, prediction in zip(graph.nodes, predictions)
     }
@@ -56,11 +59,16 @@ def create_weighted_graph(y_true: Tensor, graph: nx.Graph, source: int, target: 
 
 if __name__ == "__main__":
     net = Network(notebook=False)
-
-    y_true = ...
+    
+    timestep = 1
+    scaler = MinMaxScaler(feature_range=(0, 100))
+    y_pred, y_true = get_all_y_for_DCRNN()
+    y_pred = y_pred[timestep, :, 0]
+    print(y_pred.shape)
+    y_pred = scaler.fit_transform([y_pred])
 
     shortest_path, node_colors, edge_colors = create_weighted_graph(
-        y_true, graph, source=10, target=7
+        y_pred, graph, source=10, target=7
     )
 
     for node, color in zip(graph.nodes, node_colors):
