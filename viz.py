@@ -48,7 +48,7 @@ def get_all_y_hats(test_loader: DataLoader, model_name: str) -> tuple[Tensor, Te
                 true_val.append(timestamp[:, 0].cpu())
             for timestamp in y_hat:
                 pred_val.append(timestamp.cpu())
-
+ 
     return torch.tensor(np.array(pred_val)), torch.tensor(np.array(true_val))
 
 
@@ -167,6 +167,16 @@ def visualise_sensors(*visualisations):
         visualize_sensors_for_every_time_stamp(
             n=1000, predicted=pred, true=true, title="TGNN"
         )
+
+
+def get_all_y_for_DCRNN():
+    return get_all_y_hats(
+        test_loader=create_test_data_loader(
+            test_data_set=test_data_set, BATCH_SIZE=1
+        ),
+        model_name="DCRNN",
+    )
+
 
 
 def visualise(*visualisations):
