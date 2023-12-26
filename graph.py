@@ -1,6 +1,7 @@
 import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
+from pandas import value_counts
 from torch import Tensor
 from pyvis.network import Network
 from sklearn.preprocessing import MinMaxScaler
@@ -45,10 +46,20 @@ def create_weighted_graph(predictions: Tensor, graph: nx.Graph, source: int, tar
     )
 
     print(shortest_path)
+    
+    list_of_edges = []
+    for index in range(len(shortest_path)-1):
+        list_of_edges.append((shortest_path[index], shortest_path[index+1]))
+        
+    reversed_list = [(value[1], value[0]) for value in list_of_edges]
+    print(list_of_edges)
+    print(reversed_list)
+        
+        
 
     # Highlight the shortest path
     edge_colors = [
-        "red" if edge in zip(shortest_path, shortest_path[1:]) else "black"
+        "red" if edge in list_of_edges or edge in reversed_list else "white"
         for edge in graph.edges
     ]
     node_colors = ["green" if node in shortest_path else "grey" for node in graph.nodes]
@@ -70,7 +81,7 @@ if __name__ == "__main__":
     )
 
     for index, (node, color) in enumerate(zip(graph.nodes, node_colors)):
-        net.add_node(node, color=color, label=index)
+        net.add_node(node, color=color, label=f'Node {index}')
 
     for edge, color in zip(graph.edges, edge_colors):
         net.add_edge(*edge, color=color)
