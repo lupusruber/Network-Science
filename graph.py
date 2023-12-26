@@ -59,7 +59,7 @@ def create_weighted_graph(y_true: Tensor, graph: nx.Graph, source: int, target: 
 
 if __name__ == "__main__":
     net = Network(notebook=False)
-    
+
     timestep = 1
     scaler = MinMaxScaler(feature_range=(0, 100))
     y_pred, y_true = get_all_y_for_DCRNN()

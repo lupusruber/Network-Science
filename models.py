@@ -62,11 +62,11 @@ class RecurrentGNN(torch.nn.Module):
         super(RecurrentGNN, self).__init__()
 
         # (B, C, W, H) = (B, 325, 2, 12)
-        #B = 1
-        #C = 325
+        # B = 1
+        # C = 325
         W = 2
         H = 12
-       #D = C * W * H
+        # D = C * W * H
         self.flat = torch.nn.Flatten()
         self.linear_2 = torch.nn.Linear(W * H, hidden_units)
         self.tgnn = DCRNN(in_channels=hidden_units, out_channels=hidden_units, K=K)

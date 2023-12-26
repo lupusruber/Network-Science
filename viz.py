@@ -183,31 +183,26 @@ def get_all_y_for_DCRNN() -> tuple[Tensor, Tensor]:
 
     :return: tuple of predicted and true values
     :rtype: tuple[Tensor, Tensor]
-    """ 
-    
+    """
+
     true = Path(r"saved_data/predicted_y_from_DCRNN.pth")
     predicted = Path(r"saved_data/true_y_from_DCRNN.pth")
-    
+
     if true.is_file() and predicted.is_file():
         true_values = torch.load(true, map_location=DEVICE)
         predicted_values = torch.load(predicted, map_location=DEVICE)
-        
+
         return predicted_values, true_values
-    
+
     predicted_values, true_values = get_all_y_hats(
         test_loader=create_test_data_loader(test_data_set=test_data_set, BATCH_SIZE=1),
         model_name="DCRNN",
     )
-    
+
     torch.save(true_values, true)
     torch.save(predicted_values, predicted)
-    
-    return predicted_values, true_values
-    
-    
-        
-    
 
+    return predicted_values, true_values
 
 
 def visualise(*visualisations):
