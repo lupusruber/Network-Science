@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from torch import Tensor
 from pyvis.network import Network
 
+
 adj_mat = np.load(r"data/pems_adj_mat.npy")
 graph = nx.from_numpy_array(adj_mat)
 
@@ -50,28 +51,22 @@ def create_weighted_graph(y_true: Tensor, graph: nx.Graph, source: int, target: 
     ]
     node_colors = ["green" if node in shortest_path else "gray" for node in graph.nodes]
 
-    # Draw the graph
-    pos = nx.random_layout(graph)
-    nx.draw_networkx_nodes(graph, pos, node_color=node_colors)
-    nx.draw_networkx_edges(graph, pos, edge_color=edge_colors)
-    nx.draw_networkx_labels(graph, pos, labels=node_labels)
-    plt.axis("off")
-    plt.show()
-    plt.savefig("djikstra.png", dpi=300, bbox_inches="tight")
-    plt.close()
+    return shortest_path, node_colors, edge_colors
 
 
 if __name__ == "__main__":
-    ones = np.ones(325)
-    
     net = Network(notebook=False)
 
-    shortest_path = nx.dijkstra_path(graph, source=10, target=7, weight="weight")
-    
-    for node in graph.nodes:
-        net.add_node(node, color='red' if node in shortest_path else 'blue')
+    y_true = ...
 
-    for edge in graph.edges:
-        net.add_edge(*edge, color='red' if set(edge).issubset(shortest_path) else 'blue')
-        
-    net.show('network.html', notebook=False)
+    shortest_path, node_colors, edge_colors = create_weighted_graph(
+        y_true, graph, source=10, target=7
+    )
+
+    for node, color in zip(graph.nodes, node_colors):
+        net.add_node(node, color=color)
+
+    for edge, color in zip(graph.edges, edge_colors):
+        net.add_edge(*edge, color=color)
+
+    net.show("network.html", notebook=False)
