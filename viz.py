@@ -1,10 +1,11 @@
+from pathlib import Path
+
 import numpy as np
 import seaborn as sns
 import torch
 from matplotlib import pyplot as plt
 from torch import Tensor
 from torch.utils.data import DataLoader
-from pathlib import Path
 
 from data import (
     create_test_data_loader,
@@ -192,7 +193,8 @@ def get_all_y_for_DCRNN() -> tuple[Tensor, Tensor]:
         true_values = torch.load(true, map_location=DEVICE)
         predicted_values = torch.load(predicted, map_location=DEVICE)
 
-        return predicted_values, true_values
+        print("Values Loaded")
+        return predicted_values.cpu(), true_values.cpu()
 
     predicted_values, true_values = get_all_y_hats(
         test_loader=create_test_data_loader(test_data_set=test_data_set, BATCH_SIZE=1),
