@@ -2,12 +2,11 @@ import networkx as nx
 import numpy as np
 from matplotlib import pyplot as plt
 from pandas import value_counts
-from torch import Tensor
 from pyvis.network import Network
 from sklearn.preprocessing import MinMaxScaler
+from torch import Tensor
 
 from viz import get_all_y_for_DCRNN
-
 
 adj_mat = np.load(r"data/pems_adj_mat.npy")
 graph = nx.from_numpy_array(adj_mat)
@@ -27,13 +26,16 @@ def graph_info_and_visualizations(graph: nx.Graph) -> None:
     plt.show()
 
 
-def create_weighted_graph(predictions: Tensor, graph: nx.Graph, source: int, target: int):
+def create_weighted_graph(
+    predictions: Tensor, graph: nx.Graph, source: int, target: int
+):
     node_labels = {
         node: prediction for node, prediction in zip(graph.nodes, predictions)
     }
 
     edge_weights = {
-        (u, v): 1 / prediction if prediction != 0 else 100 for (u, v), prediction in zip(graph.edges, predictions)
+        (u, v): 1 / prediction if prediction != 0 else 100
+        for (u, v), prediction in zip(graph.edges, predictions)
     }
 
     # Set the node labels and edge weights of the graph
@@ -45,17 +47,13 @@ def create_weighted_graph(predictions: Tensor, graph: nx.Graph, source: int, tar
         graph, source=source, target=target, weight="weight"
     )
 
-    print(shortest_path)
-    
     list_of_edges = []
-    for index in range(len(shortest_path)-1):
-        list_of_edges.append((shortest_path[index], shortest_path[index+1]))
-        
-    reversed_list = [(value[1], value[0]) for value in list_of_edges]
-    print(list_of_edges)
-    print(reversed_list)
-        
-        
+    reversed_list = []
+
+    for index in range(len(shortest_path) - 1):
+        list_of_edges.append((shortest_path[index], shortest_path[index + 1]))
+        reversed_list.append((shortest_path[index + 1], shortest_path[index]))
+
 
     # Highlight the shortest path
     edge_colors = [
@@ -81,7 +79,7 @@ if __name__ == "__main__":
     )
 
     for index, (node, color) in enumerate(zip(graph.nodes, node_colors)):
-        net.add_node(node, color=color, label=f'Node {index}')
+        net.add_node(node, color=color, label=f"Node {index}")
 
     for edge, color in zip(graph.edges, edge_colors):
         net.add_edge(*edge, color=color)
