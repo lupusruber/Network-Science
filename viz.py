@@ -60,7 +60,6 @@ def visualize_data(sensor_number=1, time_steps=24):
     plt.show()
 
 
-
 def visualize_sensors_for_every_time_stamp(
         n: int, predicted: Tensor, true: Tensor, title: str
 ):
