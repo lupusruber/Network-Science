@@ -10,3 +10,6 @@ data/PEMS-BAY.zip:Zone.Identifier
 __pycache__
 data
 /tmp/
+saved_data
+generated_images
+lib
