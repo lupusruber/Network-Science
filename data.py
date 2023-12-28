@@ -1,10 +1,9 @@
-from torch.utils.data import DataLoader
+import numpy as np
 import torch
 from torch import Tensor
-import numpy as np
+from torch.utils.data import DataLoader
 from torch_geometric_temporal import PemsBayDatasetLoader, temporal_signal_split
 from torch_geometric_temporal.signal import StaticGraphTemporalSignal
-
 
 DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -21,14 +20,14 @@ for snapshot in train_data_set:
     break
 
 
-def get_sample_data_for_viz() -> tuple[Tensor, Tensor]:
-    test_input = np.array(test_data_set.features)
-    test_target = np.array(test_data_set.targets)
+# def get_sample_data_for_viz() -> tuple[Tensor, Tensor]:
+#     test_input = np.array(test_data_set.features)
+#     test_target = np.array(test_data_set.targets)
 
-    test_x_tensor = torch.from_numpy(test_input).to(DEVICE, dtype=torch.float32)
-    test_target_tensor = torch.from_numpy(test_target).to(DEVICE, dtype=torch.float32)
+#     test_x_tensor = torch.from_numpy(test_input).to(DEVICE, dtype=torch.float32)
+#     test_target_tensor = torch.from_numpy(test_target).to(DEVICE, dtype=torch.float32)
 
-    return test_x_tensor, test_target_tensor
+#     return test_x_tensor, test_target_tensor
 
 
 def create_train_data_loader(
@@ -69,3 +68,11 @@ def create_test_data_loader(
         test_data_set_new, batch_size=BATCH_SIZE, shuffle=False, drop_last=True
     )
     return test_loader
+
+
+test_loader_no_batch = create_test_data_loader(
+    test_data_set=test_data_set, BATCH_SIZE=1
+)
+test_loader_batched = create_test_data_loader(
+    test_data_set=test_data_set, BATCH_SIZE=32
+)

@@ -5,24 +5,20 @@ import seaborn as sns
 import torch
 from matplotlib import pyplot as plt
 from torch import Tensor
-from torch.utils.data import DataLoader
 
 from data import (
-    create_test_data_loader,
     dataset,
-    get_sample_data_for_viz,
     static_edge_index,
-    test_data_set,
+    test_loader_batched,
+    test_loader_no_batch,
 )
 from models import model_DCRNN, model_TGCN, model_TGNN
 
 DEVICE: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-def get_all_y_hats(test_loader: DataLoader, model_name: str) -> tuple[Tensor, Tensor]:
+def get_all_y_hats(model_name: str) -> tuple[Tensor, Tensor]:
     """_summary_
-    :param test_loader: Which test data loader to use
-    :type test_loader: DataLoader
     :param model_name: Name of the model
     :type model_name: str
     :return: predicted and true tensor values for each time step
@@ -31,7 +27,7 @@ def get_all_y_hats(test_loader: DataLoader, model_name: str) -> tuple[Tensor, Te
     pred_val = list()
     true_val = list()
     if "DCRNN" == model_name:
-        for X, y in test_loader:
+        for X, y in test_loader_no_batch:
             X = X.squeeze()
             X = X.reshape(325, 24)
             y = y.squeeze()
@@ -41,7 +37,7 @@ def get_all_y_hats(test_loader: DataLoader, model_name: str) -> tuple[Tensor, Te
             pred_val.append(y_hat.cpu())
             true_val.append(y[:, 0].cpu())
     if "TGCN" == model_name:
-        for X, y in test_loader:
+        for X, y in test_loader_no_batch:
             X = X[:, :, 0].squeeze()
             y = y[:, :, 0].squeeze()
             with torch.inference_mode():
@@ -50,7 +46,7 @@ def get_all_y_hats(test_loader: DataLoader, model_name: str) -> tuple[Tensor, Te
             pred_val.append(y_hat.cpu())
             true_val.append(y.cpu())
     if "TGNN" == model_name:
-        for X, y in test_loader:
+        for X, y in test_loader_batched:
             with torch.inference_mode():
                 model_TGNN.eval()
                 y_hat = model_TGNN(X, static_edge_index).to(DEVICE)
@@ -146,60 +142,51 @@ def prediction_of_first_n_detectors(
 
 def visualise_sensors(*visualisations):
     if "TGCN" in visualisations:
-        pred, true = get_all_y_hats(
-            test_loader=create_test_data_loader(
-                test_data_set=test_data_set, BATCH_SIZE=1
-            ),
-            model_name="TGCN",
-        )
+        y_hat, true = save_and_load_y("TGCN")
         visualize_sensors_for_every_time_stamp(
-            n=1000, predicted=pred, true=true, title="TGCN"
+            n=1000, predicted=y_hat, true=true, title="TGCN"
         )
 
     if "DCRNN" in visualisations:
-        pred, true = get_all_y_hats(
-            test_loader=create_test_data_loader(
-                test_data_set=test_data_set, BATCH_SIZE=1
-            ),
-            model_name="DCRNN",
-        )
+        y_hat, true = save_and_load_y('DCRNN')
         visualize_sensors_for_every_time_stamp(
-            n=1000, predicted=pred, true=true, title="DCRNN"
+            n=1000, predicted=y_hat, true=true, title="DCRNN"
         )
 
     if "TGNN" in visualisations:
-        pred, true = get_all_y_hats(
-            test_loader=create_test_data_loader(
-                test_data_set=test_data_set, BATCH_SIZE=32
-            ),
-            model_name="TGNN",
-        )
+        y_hat, true = save_and_load_y('TGNN')
         visualize_sensors_for_every_time_stamp(
-            n=1000, predicted=pred, true=true, title="TGNN"
+            n=1000, predicted=y_hat, true=true, title="TGNN"
         )
 
 
 def get_all_y_for_DCRNN() -> tuple[Tensor, Tensor]:
+    """_summary_
+    :return: tuple of predicted and true values
+    :rtype: tuple[Tensor, Tensor]
+    """
+    return save_and_load_y(
+        model_name="DCRNN",
+    )
+
+
+def save_and_load_y(model_name: str) -> tuple[Tensor, Tensor]:
     """_summary_
 
     :return: tuple of predicted and true values
     :rtype: tuple[Tensor, Tensor]
     """
 
-    true = Path(r"saved_data/predicted_y_from_DCRNN.pth")
-    predicted = Path(r"saved_data/true_y_from_DCRNN.pth")
+    true = Path(f"saved_data/true_y_from_{model_name}.pth")
+    predicted = Path(f"saved_data/predicted_y_from_{model_name}.pth")
 
     if true.is_file() and predicted.is_file():
         true_values = torch.load(true, map_location=DEVICE)
         predicted_values = torch.load(predicted, map_location=DEVICE)
 
-        print("Values Loaded")
         return predicted_values.cpu(), true_values.cpu()
 
-    predicted_values, true_values = get_all_y_hats(
-        test_loader=create_test_data_loader(test_data_set=test_data_set, BATCH_SIZE=1),
-        model_name="DCRNN",
-    )
+    predicted_values, true_values = get_all_y_hats(model_name=model_name)
 
     torch.save(true_values, true)
     torch.save(predicted_values, predicted)
@@ -207,41 +194,34 @@ def get_all_y_for_DCRNN() -> tuple[Tensor, Tensor]:
     return predicted_values, true_values
 
 
-def visualise(*visualisations):
-    X_test, y_test = get_sample_data_for_viz()
-    timestep = 5
-    X_test_tgcn = X_test[timestep, :, 0]
-    y_test = y_test[timestep, :, 0]
-
+def visualise(*visualisations, timestep=0, number_of_sensors=20):
     if "TGCN" in visualisations:
-        y_hat_tgcn = model_TGCN(X_test_tgcn, static_edge_index).to(DEVICE)
+        y_hat, true = save_and_load_y("TGCN")
         prediction_of_first_n_detectors(
-            n=20, next=0, predicted=y_hat_tgcn, true=y_test, title="TGCN"
+            n=number_of_sensors,
+            next=0,
+            predicted=y_hat[timestep],
+            true=true[timestep],
+            title=f"TGCN true vs predicted in timestep {timestep}",
         )
 
     if "DCRNN" in visualisations:
-        X_test_dcrn = X_test[timestep, :].reshape(325, 24)
-        y_hat_dcrn = model_DCRNN(X_test_dcrn, static_edge_index).to(DEVICE)
+        y_hat, true = save_and_load_y("DCRNN")
         prediction_of_first_n_detectors(
-            n=20, next=0, predicted=y_hat_dcrn, true=y_test, title="DCRNN"
-        )
-
-    if "TGNN" in visualisations:
-        X_data = create_test_data_loader(test_data_set=test_data_set, BATCH_SIZE=32)
-        X_from_loader, y_from_loader = None, None
-        for index, (X, y) in enumerate(X_data):
-            if index == timestep // 32:
-                X_from_loader, y_from_loader = X, y[timestep % 32]
-                break
-
-        y_hat_tgnn = model_TGNN(X_from_loader, static_edge_index).to(DEVICE)
-
-        prediction_of_first_n_detectors(
-            n=20,
+            n=number_of_sensors,
             next=0,
-            predicted=y_hat_tgnn[timestep % 32],
-            true=y_from_loader[:, 0],
-            title="TGNN",
+            predicted=y_hat[timestep],
+            true=true[timestep],
+            title=f"DCRNN true vs predicted in timestep {timestep}",
+        )
+    if "TGNN" in visualisations:
+        y_hat, true = save_and_load_y("TGNN")
+        prediction_of_first_n_detectors(
+            n=number_of_sensors,
+            next=0,
+            predicted=y_hat[timestep],
+            true=true[timestep],
+            title=f"TGNN true vs predicted in timestep {timestep}",
         )
 
 

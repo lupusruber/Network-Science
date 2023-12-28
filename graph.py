@@ -42,11 +42,10 @@ def create_weighted_graph(
         (u, v): 1 / prediction if prediction != 0 else 100
         for (u, v), prediction in zip(graph.edges, predictions)
     }
-    edge_weights_2 = {
-        (u,v): graph[v][u]['weight'] for (u, v) in graph.edges
-    }
+    edge_weights_2 = {(u, v): graph[v][u]["weight"] for (u, v) in graph.edges}
     edge_weights_3 = {
-        (u, v): edge_weights_2[(u,v)] + edge_weights[(u,v)] for (u,v) in edge_weights.keys()
+        (u, v): edge_weights_2[(u, v)] + edge_weights[(u, v)]
+        for (u, v) in edge_weights.keys()
     }
 
     # Set the node labels and edge weights of the graph
@@ -54,21 +53,19 @@ def create_weighted_graph(
     nx.set_edge_attributes(graph, edge_weights, "weight")
     nx.set_edge_attributes(graph, edge_weights_2, "weight_true")
     nx.set_edge_attributes(graph, edge_weights_3, "combined")
-    
 
     # Compute the shortest path
-    
+
     shortest_path = nx.dijkstra_path(
         graph, source=source, target=target, weight=weight_name
     )
-    
+
     list_of_edges = []
     reversed_list = []
 
     for index in range(len(shortest_path) - 1):
         list_of_edges.append((shortest_path[index], shortest_path[index + 1]))
         reversed_list.append(list_of_edges[index][::-1])
-        
 
     # Highlight the shortest path
     edge_colors = [
@@ -81,14 +78,13 @@ def create_weighted_graph(
 
 
 if __name__ == "__main__":
-
     timestep = 1
     scaler = MinMaxScaler(feature_range=(0, 100))
     y_pred, y_true = get_all_y_for_DCRNN()
     y_pred = y_pred[timestep, :, 0]
     y_pred = scaler.fit_transform([y_pred])[0]
-    
-    for weight_name in ('weight', 'weight_true', 'combined'):
+
+    for weight_name in ("weight", "weight_true", "combined"):
         net = Network(notebook=False, neighborhood_highlight=True)
         shortest_path, node_colors, edge_colors = create_weighted_graph(
             y_pred, graph, source=SOURCE, target=TARGET, weight_name=weight_name
