@@ -170,6 +170,26 @@ def get_all_y_for_DCRNN() -> tuple[Tensor, Tensor]:
     )
 
 
+def get_all_y_for_TGCN() -> tuple[Tensor, Tensor]:
+    """_summary_
+    :return: tuple of predicted and true values
+    :rtype: tuple[Tensor, Tensor]
+    """
+    return save_and_load_y(
+        model_name="DCRNN",
+    )
+
+
+def get_all_y_for_TGNN() -> tuple[Tensor, Tensor]:
+    """_summary_
+    :return: tuple of predicted and true values
+    :rtype: tuple[Tensor, Tensor]
+    """
+    return save_and_load_y(
+        model_name="DCRNN",
+    )
+
+
 def save_and_load_y(model_name: str) -> tuple[Tensor, Tensor]:
     """_summary_
 
